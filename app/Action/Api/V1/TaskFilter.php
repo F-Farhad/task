@@ -11,18 +11,18 @@ class TaskFilter {
     public function handle(): array
     {
         $data = request()->validate([
-            'startDate' => 'nullable|date_format:d-m-Y',
-            'endDate' => 'nullable|date_format:d-m-Y',
+            'startDate' => 'nullable|date_format:Y-m-d',
+            'endDate' => 'nullable|date_format:Y-m-d',
             'status' => [Rule::enum(EnumStatus::class)],
         ]);
 
-        $startDate = $data['start'] ?? date('1970-01-01');
-        $endDate = $data['endDate'] ?? date('Y-m-d');
+        $startDate = $data['startDate'] ?? date('1970-01-01');
+        $endDate = $data['endDate'] ?? date('Y-m-d', strtotime(date('Y-m-d') . ' +1 day'));
         $status = $data['status'] ?? EnumStatus::ACTIVE->value;
 
         return Task::query()
-            ->whereDate('created_at', '>=', $startDate)
-            ->whereDate('created_at', '<=', $endDate)
+            ->where('created_at', '>=', $startDate.' 00:00:00')
+            ->where('created_at', '<=', $endDate.' 00:00:00')
             ->where('status', '=', $status)
             ->get()->all();
     }
